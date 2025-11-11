@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router';
 import './App.css';
-// import axios from 'axios'
-import EditorContainer from './components/EditorContainer/EditorContainer';
 import './hooks/useWorker';
+
+const LazyLoadedContainer = React.lazy(
+  () => import('./components/EditorContainer/EditorContainer'),
+);
 
 function App() {
   useEffect(() => {
@@ -31,8 +33,22 @@ function App() {
       <div className="title">Create & Share your Code easily</div>
       <BrowserRouter>
         <Routes>
-          <Route path={'/:id'} element={<EditorContainer />} />
-          <Route index element={<EditorContainer />} />
+          <Route
+            path={'/:id'}
+            element={
+              <Suspense>
+                <LazyLoadedContainer />
+              </Suspense>
+            }
+          />
+          <Route
+            index
+            element={
+              <Suspense>
+                <LazyLoadedContainer />
+              </Suspense>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </div>
