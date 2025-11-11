@@ -10,12 +10,21 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
-const allowedOriginRegexes = [
-  /https:\/\/notecode-frontend-zp94\.onrender\.com/,
-];
+const allowSites = new Set([
+  'https://notecode-frontend-zp94.onrender.com',
+  'http://localhost:5173',
+]);
 // Middleware
 // express (server)
-app.use(cors({ origin: '*', credentials: true }));
+app.use(
+  cors({
+    origin(origin, cb) {
+      if (!origin) return cb(null, true); // SSR/cURL
+      cb(allowSites.has(origin) ? null : new Error('Not allowed by CORS'), true);
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -30,18 +39,19 @@ app.use('/api/notecode', notecodeRouter);
 // Error handling middleware
 app.use(errorHandler);
 
-
-mongoose.connect(process.env.MONGO_URI as string, {
+mongoose
+  .connect(process.env.MONGO_URI as string, {
     maxPoolSize: 10,
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 45000,
-}).then(() => {
-    app.listen(port, () => {
-  console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
-});
-}).catch((e) => {
-    console.log('Error while setting up mongo db', e)
   })
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+    });
+  })
+  .catch((e) => {
+    console.log('Error while setting up mongo db', e);
+  });
 
 export default app;
-
