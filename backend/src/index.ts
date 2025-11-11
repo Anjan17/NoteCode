@@ -12,7 +12,13 @@ const port = process.env.PORT || 3000;
 
 // Middleware
 // express (server)
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ origin: (origin, callback) => {
+  if (origin === 'http://localhost:5173' || origin === 'https://notecode-frontend-zp94.onrender.com') {
+    callback(null, true);
+  } else {
+    callback(new Error('Not allowed by CORS'));
+  }
+}, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
